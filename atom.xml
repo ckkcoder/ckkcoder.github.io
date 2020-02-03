@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Kevin&#39;s Blog</title>
+  
+  <subtitle>天空一无所有，为何给我安慰</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://vkkevin.github.io/"/>
+  <updated>2020-02-03T16:10:14.876Z</updated>
+  <id>http://vkkevin.github.io/</id>
+  
+  <author>
+    <name>Kevin</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>XWINDOW 中 WINDOWID 的获取</title>
+    <link href="http://vkkevin.github.io/2019/08/22/x-window-id/"/>
+    <id>http://vkkevin.github.io/2019/08/22/x-window-id/</id>
+    <published>2019-08-22T01:12:15.000Z</published>
+    <updated>2020-02-03T16:10:14.876Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>XWINDOW 下获取 WINDOWID</p></blockquote><a id="more"></a><p>原文链接：<a href="https://blog.csdn.net/superkeep/article/details/88948634" target="_blank" rel="noopener">https://blog.csdn.net/superkeep/article/details/88948634</a></p><h2 id="linux下的脚本"><a href="#linux下的脚本" class="headerlink" title="linux下的脚本"></a>linux下的脚本</h2><pre><code class="bash">#!/bin/bash#方法一xprop -root | grep &quot;_NET_ACTIVE_WINDOW(WINDOW)&quot;| cut -d &#39; &#39; -f 5#方法二xwininfo -name ShowAnimationProject | grep &quot;Window id&quot;| cut -d &quot; &quot; -f 4#方法三findpid=$1known_windows=$(xwininfo -root -children|sed -e &#39;s/^ *//&#39;|grep -E &quot;^0x&quot;|awk &#39;{ print $1 }&#39;)for id in ${known_windows}do    xp=$(xprop -id $id _NET_WM_PID)    if test $? -eq 0; then        pid=$(xprop -id $id _NET_WM_PID|cut -d&#39;=&#39; -f2|tr -d &#39; &#39;)        if test &quot;x${pid}&quot; = x${findpid}        then            echo &quot;Windows Id: $id&quot;        fi    fidone</code></pre><h2 id="通过代码方式获取"><a href="#通过代码方式获取" class="headerlink" title="通过代码方式获取"></a>通过代码方式获取</h2><pre><code class="cpp">#ifndef WINDOWIDUTIL_H#define WINDOWIDUTIL_H#include&lt;QDebug&gt;#include &lt;X11/Xlib.h&gt;#include &lt;X11/Xatom.h&gt;#include &lt;iostream&gt;#include &lt;list&gt;#include &lt;stdlib.h&gt;class WindowsMatchingPid{public:    WindowsMatchingPid(Display *display, Window wRoot, unsigned long pid)        : _display(display),          _pid(pid)    {        // Get the PID property atom.        _atomPID = XInternAtom(display, &quot;_NET_WM_PID&quot;, True);        if(_atomPID == None)        {            std::cout &lt;&lt; &quot;No such atom&quot; &lt;&lt; std::endl;            return;        }        search(wRoot);    }    const std::list&lt;Window&gt; &amp;result() const { return _result; }private:    unsigned long  _pid;    Atom           _atomPID;    Display       *_display;    std::list&lt;Window&gt;   _result;    void    search(Window w)    {        // Get the PID for the current Window.        Atom           type;        int            format;        unsigned long  nItems;        unsigned long  bytesAfter;        unsigned char *propPID = 0;        if(Success == XGetWindowProperty(                    _display,                    w,                    _atomPID,                    0,                    1,                    False,                    XA_CARDINAL,                    &amp;type,                    &amp;format,                    &amp;nItems,                    &amp;bytesAfter,                    &amp;propPID))        {            if(propPID != 0)            {                // If the PID matches, add this window to the result set.                if(_pid == *((unsigned long *)propPID))                {                    _result.push_back(w);                }                XFree(propPID);            }        }        // Recurse into child windows.        Window    wRoot;        Window    wParent;        Window   *wChild;        unsigned  nChildren;        if(0 != XQueryTree(_display, w, &amp;wRoot, &amp;wParent, &amp;wChild, &amp;nChildren))        {            for(unsigned i = 0; i &lt; nChildren; i++)                search(wChild[i]);        }        //XFree(propPID);    }};unsigned longget_win_id_from_pid(qint64 pid){    //std::cout &lt;&lt; &quot;Searching for windows associated with PID &quot; &lt;&lt; pid &lt;&lt; std::endl;    // Start with the root window.    Display *display = XOpenDisplay(0);    WindowsMatchingPid match(display, XDefaultRootWindow(display), pid);    // Print the result.    const std::list&lt;Window&gt; &amp;result = match.result();    long win_id = 0;    for(std::list&lt;Window&gt;::const_iterator pos = result.begin(); pos != result.end(); pos++)    {        std::cout &lt;&lt; &quot;Window #&quot; &lt;&lt; (unsigned long)(*pos) &lt;&lt; std::endl;        win_id = (unsigned long)(*pos);    }    return win_id;}#endif // WINDOWIDUTIL_H</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;XWINDOW 下获取 WINDOWID&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="Linux" scheme="http://vkkevin.github.io/categories/Linux/"/>
+    
+    
+      <category term="Linux" scheme="http://vkkevin.github.io/tags/Linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Debian 10 设置 gnome-terminal 透明</title>
+    <link href="http://vkkevin.github.io/2019/08/22/gnome-terminal-transparency/"/>
+    <id>http://vkkevin.github.io/2019/08/22/gnome-terminal-transparency/</id>
+    <published>2019-08-22T00:21:38.000Z</published>
+    <updated>2020-02-03T16:10:14.876Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>Debian 系列下设置gnome终端的透明度</p></blockquote><a id="more"></a><p>Ubuntu 中可以通过图形化的方式设置 gnome-terminal 的透明度，但是在 Debian 系列中无法通过这种方式设置。查询了许多资料，发现可以在 shell脚本中通过 xprop 设置终端的透明度，如 ~/.bashrc 等。</p><p>代码如下：</p><pre><code class="bash">TRANSPARENCY_HEX=$(printf 0x%x $((0xffffffff * 70 / 100)))if [ -n &quot;$WINDOWID&quot; ]; then        xprop -id &quot;$WINDOWID&quot; -f _NET_WM_WINDOW_OPACITY 32c -set _NET_WM_WINDOW_OPACITY &quot;$TRANSPARENCY_HEX&quot;else    windowid=$(xprop -root | grep &quot;_NET_ACTIVE_WINDOW(WINDOW)&quot; | cut -d &#39; &#39; -f 5)    xprop -id &quot;$windowid&quot; -f _NET_WM_WINDOW_OPACITY 32c -set _NET_WM_WINDOW_OPACITY &quot;$TRANSPARENCY_HEX&quot;fi</code></pre><p>通过调整 TRANSPARENCT_HEX 中的值可以调整透明度。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;Debian 系列下设置gnome终端的透明度&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="Linux" scheme="http://vkkevin.github.io/categories/Linux/"/>
+    
+    
+      <category term="Linux" scheme="http://vkkevin.github.io/tags/Linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>git命令学习</title>
+    <link href="http://vkkevin.github.io/2019/07/13/git-command/"/>
+    <id>http://vkkevin.github.io/2019/07/13/git-command/</id>
+    <published>2019-07-13T08:21:52.000Z</published>
+    <updated>2020-02-03T16:10:14.876Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>积累平时使用到的Git命令<br>常用：</p><ol><li>设置远程库</li><li>推送时设置上游版本</li><li>查看分支的上游</li><li>回退版本库</li><li>拉取远程代码并rebase</li></ol></blockquote><a id="more"></a><h2 id="设置远程库"><a href="#设置远程库" class="headerlink" title="设置远程库"></a>设置远程库</h2><pre><code class="bash">git remote add 仓库名 仓库地址</code></pre><h2 id="推送时设置上游"><a href="#推送时设置上游" class="headerlink" title="推送时设置上游"></a>推送时设置上游</h2><p>例如想要设置推送到origin远程库的master分支</p><pre><code class="bash">git push --set-upstream origin master# 或者使用下列命令git push -u origin master</code></pre><h2 id="查看分支的上游"><a href="#查看分支的上游" class="headerlink" title="查看分支的上游"></a>查看分支的上游</h2><pre><code class="bash">#  显示分支所在的远程库git config --get branch.master.remote</code></pre><h2 id="回退版本库"><a href="#回退版本库" class="headerlink" title="回退版本库"></a>回退版本库</h2><pre><code class="bash"># 回退版本库，暂存库（--mixed为默认参数，即不加任何参数时）git reset --mixed commit_id# 回退版本库git reset --soft commit_id# 回退版本库，暂存库，工作区（会更改本地源代码，需谨慎操作）git reset --mixed commit_id</code></pre><h2 id="拉取远程代码并rebase"><a href="#拉取远程代码并rebase" class="headerlink" title="拉取远程代码并rebase"></a>拉取远程代码并rebase</h2><pre><code class="bash"># 加入--rebase参数会将本地的提交整理成历史与远程master合并git pull --rebase origin master</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;积累平时使用到的Git命令&lt;br&gt;常用：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;设置远程库&lt;/li&gt;
+&lt;li&gt;推送时设置上游版本&lt;/li&gt;
+&lt;li&gt;查看分支的上游&lt;/li&gt;
+&lt;li&gt;回退版本库&lt;/li&gt;
+&lt;li&gt;拉取远程代码并rebase&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="Git" scheme="http://vkkevin.github.io/categories/Git/"/>
+    
+    
+      <category term="Git" scheme="http://vkkevin.github.io/tags/Git/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Git 拒绝合并无关的历史</title>
+    <link href="http://vkkevin.github.io/2019/07/13/git-fatal-merge-unrelated-histories/"/>
+    <id>http://vkkevin.github.io/2019/07/13/git-fatal-merge-unrelated-histories/</id>
+    <published>2019-07-13T06:11:10.000Z</published>
+    <updated>2020-02-03T16:10:14.876Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>Git在pull时因为历史不同无法合并</p></blockquote><a id="more"></a><h2 id="错误情况"><a href="#错误情况" class="headerlink" title="错误情况"></a>错误情况</h2><p>本地初始化的项目和 github 等远程仓库中的版本不一致，倒是无法提交代码</p><pre><code class="bash">git pull origin masterfatal: 拒绝合并无关的历史</code></pre><h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>在pull时添加–allow-unrelated-histories参数即可</p><pre><code class="bash">git pull origin master --allow-unrelated-histories合并成功</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;Git在pull时因为历史不同无法合并&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="Git" scheme="http://vkkevin.github.io/categories/Git/"/>
+    
+    
+      <category term="Git" scheme="http://vkkevin.github.io/tags/Git/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Linux服务管理</title>
+    <link href="http://vkkevin.github.io/2019/07/13/linux-service/"/>
+    <id>http://vkkevin.github.io/2019/07/13/linux-service/</id>
+    <published>2019-07-13T02:22:26.000Z</published>
+    <updated>2020-02-03T16:10:14.876Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>Debian系列发行版下的服务管理</p></blockquote><a id="more"></a><h2 id="服务的自启动"><a href="#服务的自启动" class="headerlink" title="服务的自启动"></a>服务的自启动</h2><h3 id="删除一个服务"><a href="#删除一个服务" class="headerlink" title="删除一个服务"></a>删除一个服务</h3><p>如果想要手动的完全禁用某个服务，需要删除在”/etc/rcX.d”中的该服务链接。若使用update-rc.d，会比较简单，如下：</p><pre><code class="bash">update-rc.d -f servername remove</code></pre><p>参数-f是强制删除符号链接，即使”/etc/init.d/服务”仍然存在。这个命令仅仅禁止该服务，直到该服务被升级。如果想在服务升级后仍然保持被禁用。应该执行如下的命令：</p><pre><code class="bash">update-rc.d servername stop 80 0 1 2 3 4 5 6 .</code></pre><h3 id="增加一个服务"><a href="#增加一个服务" class="headerlink" title="增加一个服务"></a>增加一个服务</h3><p>如果想重新添加这个服务并让它开机自动执行，执行以下命令：</p><pre><code class="bash">update-rc.d servername defaults</code></pre><p>并且可以指定该服务的启动顺序：</p><pre><code class="bash">update-rc.d servername defaults 90</code></pre><p>还可以更详细的控制start与kill顺序：</p><pre><code class="bash">update-rc.d servername defaults 20 80</code></pre><p>其中前面的20是start时的运行顺序级别，80为kill时的级别。也可以写成：</p><pre><code class="bash">update-rc.d servername start 20 2 3 4 5 . stop 80 0 1 6 .</code></pre><p>其中0～6为运行级别。 update-rc.d命令不仅适用Linux服务，编写的脚本同样可以用这个命令设为开机自动运行</p><h2 id="Systemd方式管理"><a href="#Systemd方式管理" class="headerlink" title="Systemd方式管理"></a>Systemd方式管理</h2><p>在较新的内核中，其使用了 Systemd，不再用init。Systemd 取代了initd，成为系统的第一个进程（PID 等于 1），其他进程都是它的子进程。因此，相关的服务管理也由Systemd负责。</p><h3 id="设置开机启动服务"><a href="#设置开机启动服务" class="headerlink" title="设置开机启动服务"></a>设置开机启动服务</h3><pre><code class="bash">systemctl enable servername</code></pre><h3 id="关闭开机启动服务"><a href="#关闭开机启动服务" class="headerlink" title="关闭开机启动服务"></a>关闭开机启动服务</h3><pre><code class="bash">systemctl disable servername</code></pre><h3 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h3><pre><code class="bash">systemctl start servername</code></pre><h3 id="关闭服务"><a href="#关闭服务" class="headerlink" title="关闭服务"></a>关闭服务</h3><pre><code class="bash">systemctl stop servername</code></pre><h3 id="重启服务"><a href="#重启服务" class="headerlink" title="重启服务"></a>重启服务</h3><pre><code class="bash">systemctl restart servername</code></pre><h2 id="服务的手动管理"><a href="#服务的手动管理" class="headerlink" title="服务的手动管理"></a>服务的手动管理</h2><h3 id="启动一个服务"><a href="#启动一个服务" class="headerlink" title="启动一个服务"></a>启动一个服务</h3><pre><code class="bash">service servername start</code></pre><h3 id="关闭一个服务"><a href="#关闭一个服务" class="headerlink" title="关闭一个服务"></a>关闭一个服务</h3><pre><code class="bash">service servername stop</code></pre><h3 id="查看一个服务的状态"><a href="#查看一个服务的状态" class="headerlink" title="查看一个服务的状态"></a>查看一个服务的状态</h3><pre><code class="bash">service servername status</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;Debian系列发行版下的服务管理&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="Linux" scheme="http://vkkevin.github.io/categories/Linux/"/>
+    
+    
+      <category term="Linux" scheme="http://vkkevin.github.io/tags/Linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>设计模式开篇</title>
+    <link href="http://vkkevin.github.io/2019/07/06/design-pattern/"/>
+    <id>http://vkkevin.github.io/2019/07/06/design-pattern/</id>
+    <published>2019-07-06T02:17:50.000Z</published>
+    <updated>2020-02-03T16:10:14.872Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>设计模式开篇</p></blockquote><a id="more"></a><h2 id="设计模式是什么？"><a href="#设计模式是什么？" class="headerlink" title="设计模式是什么？"></a>设计模式是什么？</h2><h2 id="为什么需要设计模式？"><a href="#为什么需要设计模式？" class="headerlink" title="为什么需要设计模式？"></a>为什么需要设计模式？</h2><h2 id="设计模式的作用？"><a href="#设计模式的作用？" class="headerlink" title="设计模式的作用？"></a>设计模式的作用？</h2><h2 id="设计模式的八大原则。"><a href="#设计模式的八大原则。" class="headerlink" title="设计模式的八大原则。"></a>设计模式的八大原则。</h2><h3 id="依赖倒置原则（DIP）"><a href="#依赖倒置原则（DIP）" class="headerlink" title="依赖倒置原则（DIP）"></a>依赖倒置原则（DIP）</h3><h3 id="开闭原则（OCP）"><a href="#开闭原则（OCP）" class="headerlink" title="开闭原则（OCP）"></a>开闭原则（OCP）</h3><p><a href>设计模式之模板模式</a></p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;设计模式开篇&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="设计模式" scheme="http://vkkevin.github.io/categories/DESIGN-PATTERN/"/>
+    
+    
+      <category term="Design-Pattern" scheme="http://vkkevin.github.io/tags/Design-Pattern/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mcu</title>
+    <link href="http://vkkevin.github.io/2019/07/04/mcu/"/>
+    <id>http://vkkevin.github.io/2019/07/04/mcu/</id>
+    <published>2019-07-04T12:02:56.000Z</published>
+    <updated>2020-02-03T16:10:14.876Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>Linux下的单片机开发</p></blockquote><a id="more"></a><h2 id="Linux下的单片机开发"><a href="#Linux下的单片机开发" class="headerlink" title="Linux下的单片机开发"></a>Linux下的单片机开发</h2><h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><blockquote><p>编译器：sdcc<br>二进制转换：packihx<br>串口驱动：python(3)-serial<br>烧录软件：stcflash.py</p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;Linux下的单片机开发&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="单片机" scheme="http://vkkevin.github.io/categories/MCU/"/>
+    
+    
+      <category term="MCU" scheme="http://vkkevin.github.io/tags/MCU/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>文件和目录</title>
+    <link href="http://vkkevin.github.io/2018/10/06/file/"/>
+    <id>http://vkkevin.github.io/2018/10/06/file/</id>
+    <published>2018-10-06T13:57:48.000Z</published>
+    <updated>2020-02-03T16:10:14.872Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>UNIX 环境高级编程第三章<br>本章描述了 UNIX 文件系统的其他特性和文件的性质</p></blockquote><a id="more"></a><h2 id="函数-stat-fstat-fstatat-和-lstat"><a href="#函数-stat-fstat-fstatat-和-lstat" class="headerlink" title="函数 stat, fstat, fstatat 和 lstat"></a>函数 stat, fstat, fstatat 和 lstat</h2><pre><code class="c">#include &lt;sys/types.h&gt;#include &lt;sys/stat.h&gt;#include &lt;unistd.h&gt;int stat(const char *__restrict pathname, struct stat *__restrict buf);int fstat(int fd, struct stat *buf);int lstat(const char *__restrict pathname, struct stat *__restrict buf);int fstatat(int fd, const char *__restrict pathname, struct stat *__restrict buf);</code></pre><p>返回值(四个函数):<br>    1). 若成功，返回0<br>    2). 若出错，返回-1</p><h2 id="stat-结构体"><a href="#stat-结构体" class="headerlink" title="stat 结构体"></a>stat 结构体</h2><pre><code class="c">struct stat {    mode_t                st_mode;    /* file type &amp; mode (permissions) */    ino_t                st_ino;    dev_t                st_dev;    dev_t                st_rdev;    nlink_t                st_nlink;    uid_t                st_uid;    gid_t                st_gid;    off_t                st_size;    struct timespec        st_atime;    struct timespec        st_mtime;    struct timespec        st_ctime;    blksize_t            st_blksize;    blkcnt_t            st_blocks;};</code></pre><h2 id="文件类型"><a href="#文件类型" class="headerlink" title="文件类型"></a>文件类型</h2><ol><li>普通文件(regular file)</li><li>目录文件(directory file)</li><li>块特殊文件(block special file)</li><li>字符特殊文件(character special file)</li><li>FIFO</li><li>套接字(socket)</li><li>符号链接(symbolic link)</li></ol><p>文件类型信息包含在 stat 结构中的 st_mode 成员中。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;UNIX 环境高级编程第三章&lt;br&gt;本章描述了 UNIX 文件系统的其他特性和文件的性质&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="UNIX环境高级编程" scheme="http://vkkevin.github.io/categories/APUE/"/>
+    
+    
+      <category term="UNIX" scheme="http://vkkevin.github.io/tags/UNIX/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>AT&amp;T 汇编</title>
+    <link href="http://vkkevin.github.io/2018/10/05/atas/"/>
+    <id>http://vkkevin.github.io/2018/10/05/atas/</id>
+    <published>2018-10-05T15:27:11.000Z</published>
+    <updated>2020-02-03T16:10:14.872Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>AT&amp;T 汇编介绍</p></blockquote><a id="more"></a>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;AT&amp;amp;T 汇编介绍&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="汇编" scheme="http://vkkevin.github.io/categories/ASSEMBLY/"/>
+    
+    
+      <category term="Assembly" scheme="http://vkkevin.github.io/tags/Assembly/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>8086 寄存器介绍</title>
+    <link href="http://vkkevin.github.io/2018/10/05/register/"/>
+    <id>http://vkkevin.github.io/2018/10/05/register/</id>
+    <published>2018-10-05T13:55:44.000Z</published>
+    <updated>2020-02-03T16:10:14.876Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>本篇介绍 8086 CPU 寄存器的相关信息</p></blockquote><a id="more"></a><h2 id="8086-CPU-寄存器-14个"><a href="#8086-CPU-寄存器-14个" class="headerlink" title="8086 CPU 寄存器: (14个)"></a>8086 CPU 寄存器: (14个)</h2><h3 id="八个通用寄存器"><a href="#八个通用寄存器" class="headerlink" title="八个通用寄存器"></a>八个通用寄存器</h3><pre><code>AX: 累加寄存器CX: 计数寄存器DX: 数据寄存器BX: 基址寄存器BP: 基址指针寄存器SI: 源变址寄存器DI: 目的变址寄存器SP: 堆栈指示寄存器，用来存放栈顶有效地址</code></pre><h3 id="两个控制寄存器"><a href="#两个控制寄存器" class="headerlink" title="两个控制寄存器"></a>两个控制寄存器</h3><pre><code>IP: 指令寄存器，用来存放下一条要取指令的有效地址FL: 标志寄存器，用来存放状态标志和控制标志</code></pre><h3 id="四个段寄存器-用于存放段地址"><a href="#四个段寄存器-用于存放段地址" class="headerlink" title="四个段寄存器 (用于存放段地址)"></a>四个段寄存器 (用于存放段地址)</h3><pre><code>DS: 数据段寄存器 (Data Segment)SS: 堆栈段寄存器 (Stack Segment)CS: 代码段寄存器 (Code Segment)ES: 附加段寄存器 (Extra Segment)</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;本篇介绍 8086 CPU 寄存器的相关信息&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="汇编" scheme="http://vkkevin.github.io/categories/ASSEMBLY/"/>
+    
+    
+      <category term="Assembly" scheme="http://vkkevin.github.io/tags/Assembly/"/>
+    
+      <category term="Register" scheme="http://vkkevin.github.io/tags/Register/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>文件I0</title>
+    <link href="http://vkkevin.github.io/2018/09/06/file-io/"/>
+    <id>http://vkkevin.github.io/2018/09/06/file-io/</id>
+    <published>2018-09-06T14:14:29.000Z</published>
+    <updated>2020-02-03T16:10:14.872Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>UNIX 环境高级编程第三章<br>本章描述了 UNIX 文件I/O的知识</p></blockquote><a id="more"></a><h2 id="打开一个文件或设备"><a href="#打开一个文件或设备" class="headerlink" title="打开一个文件或设备"></a>打开一个文件或设备</h2><pre><code class="c">#include &lt;sys/types.h&gt;#include &lt;sys/stat.h&gt;#include &lt;fcntl.h&gt;int open(const char *pathname, int flags, mode_t mode);int openat(int fd, const char *pathname, int flags, mode_t mode);</code></pre><p>flags:<br>    O_RDONLY, O_WRONLY, O_RDWR 个有且有一个<br>    可选:<br>    O_APPEND 每次写时都追加到文件的尾端<br>    O_CREAT     若此文件不存在则创建它<br>    O_TRUNC  若此文件存在，而且为只写或读-写成功打开，则将其长度截取为0<br>    O_SYNC     等待写完成(数据和属性)</p><p>fd 参数把 open 和 openat 函数区分开来，共有三种可能性。<br>    1). path 参数指定的绝对路径名，在这种情况下，fd 参数被忽略，openat 函数相当于open函数。<br>    2). path 参数指定的是相对路径名，fd 参数指出了相对路径名在文件系统中的开始地址。fd参数是通过打开相对路径名所在的目录来获取。<br>    3). path 参数指定了相对路径名，fd 参数具有特殊值 AT_FDCWD。在这种情况下，路径名在当前工作中获取，openat 函数在操作上与 open 函数类似。</p><h2 id="创建一个新文件"><a href="#创建一个新文件" class="headerlink" title="创建一个新文件"></a>创建一个新文件</h2><pre><code class="c">#include &lt;fcntl.h&gt;int creat(const char *path, mode_t mode);</code></pre><p>Note:<br>    此函数等价于:<br>        open(path, O_WRONLY | O_CREAT | O_TRUNC, mode);</p><h2 id="关闭一个打开的文件"><a href="#关闭一个打开的文件" class="headerlink" title="关闭一个打开的文件"></a>关闭一个打开的文件</h2><pre><code class="c">#include &lt;unistd.h&gt;int close(int fd);</code></pre><h2 id="设置文件偏移量"><a href="#设置文件偏移量" class="headerlink" title="设置文件偏移量"></a>设置文件偏移量</h2><pre><code class="c">#include &lt;unistd.h&gt;off_t lseek(int fd, off_t offset, int whence);</code></pre><p>对参数 offset 的解释与参数 whence 有关<br>    1). 若 whence 是 SEEK_SET, 则将该文件的偏移量设置为距文件开始处 offset 个字节<br>    2). 若 whence 是 SEEK_CUR, 则将该文件的偏移量设置为其当前值加 offset，offset 可为正或负<br>    3). 若 whence 是 SEEK_END, 则将该文件的偏移量设置为文件长度加 offset，offset 可正可负<br>若 lseek 成功执行，则返回新的文件偏移量。<br>如果文件描述符指向的是一个管道，FIFO 或网络套接字，则 lseek 返回-1,并将 errno 设置为 ESPIPE<br>lseek – l 指的是 long (长整型)</p><h2 id="读取数据"><a href="#读取数据" class="headerlink" title="读取数据"></a>读取数据</h2><pre><code class="c">#include &lt;unistd.h&gt;ssize_t read(int fd, void *buf, size_t nbytes);</code></pre><p>返回值:<br>    1). 若读取成功则返回读到的字节数<br>    2). 若已到文件尾，返回0<br>    3). 若出错，返回-1</p><h2 id="写数据"><a href="#写数据" class="headerlink" title="写数据"></a>写数据</h2><pre><code class="c">#include &lt;unistd.h&gt;ssize_t write(int fd, const void *buf, size_t nbytes);</code></pre><p>返回值:<br>    1). 若写入失败则返回已写的字节数<br>    2). 若出错，返回-1 </p><h2 id="原子读写操作"><a href="#原子读写操作" class="headerlink" title="原子读写操作"></a>原子读写操作</h2><pre><code class="c">#include &lt;unistd.h&gt;ssize_t pread(int fd, void *buf, size_t nbytes, off_t offset);ssize_t pwrite(int fd, const void *buf, size_t nbytes, off_t offset);</code></pre><p>返回值:<br>    与 open, write 系统调用的返回值相同</p><h2 id="函数-dup-和-dup2"><a href="#函数-dup-和-dup2" class="headerlink" title="函数 dup 和 dup2"></a>函数 dup 和 dup2</h2><pre><code class="c">#include &lt;unistd.h&gt;int dup(int oldfd);int dup2(int oldfd, int newfd);</code></pre><p>返回值:<br>    1). 若成功，则返回新的文件描述符<br>    2). 若出错，返回-1</p><h2 id="函数-sync-fsync-fdatasync"><a href="#函数-sync-fsync-fdatasync" class="headerlink" title="函数 sync, fsync, fdatasync"></a>函数 sync, fsync, fdatasync</h2><pre><code class="c">#include &lt;unistd.h&gt;int fsync(int fd);int fdatasync(int fd);void sync(void);</code></pre><p>返回值(fsync, fdatasync):<br>    1). 若成功，返回0<br>    2). 若出错，返回-1</p><h2 id="函数-fcntl"><a href="#函数-fcntl" class="headerlink" title="函数 fcntl"></a>函数 fcntl</h2><pre><code class="c">#include &lt;fcntl.h&gt;int fcntl(int fd, int cmd, ... /* int arg */);</code></pre><p>返回值:<br>    1). 若成功，则依赖于 cmd<br>    2). 若出错，返回-1<br>fcntl 函数有以下5种功能:<br>    1). 复制一个已有的描述符(cmd = F_DUPFD 或 F_DUPFD_CLOEXEC)<br>    2). 获取/设置文件描述符标志(cmd = F_GETFD 或 F_SETFD)<br>    3). 获取/设置文件状态标志(cmd = F_GETFL 或 F_SETFL)<br>    4). 获取/设置异步 I/O 所有权(cmd = F_GETOWN 或 F_SETOWN)<br>    5). 获取/设置记录锁(cmd = F_GETLK, F_SETLK 或 F_SETLKW)</p><h2 id="函数-ioctl"><a href="#函数-ioctl" class="headerlink" title="函数 ioctl"></a>函数 ioctl</h2><pre><code class="c">#include &lt;sys/ioctl.h&gt;int ioctl(int fd, unsigned long request, ...);</code></pre><p>返回值:<br>    1). 若出错，返回-1<br>    2). 若成功，返回其他值 </p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;UNIX 环境高级编程第三章&lt;br&gt;本章描述了 UNIX 文件I/O的知识&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="UNIX环境高级编程" scheme="http://vkkevin.github.io/categories/APUE/"/>
+    
+    
+      <category term="UNIX" scheme="http://vkkevin.github.io/tags/UNIX/"/>
+    
+  </entry>
+  
+</feed>
