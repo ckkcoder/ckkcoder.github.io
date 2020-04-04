@@ -93,4 +93,7 @@
         $mask.on('click', toggleToc);
         $('.navbar-main .catalogue').on('click', toggleToc);
     }
+
+    // Gray Theme
+    document.body.style.filter = 'grayscale(1)';
 })(jQuery);
