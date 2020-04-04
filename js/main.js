@@ -95,5 +95,5 @@
     }
 
     // Gray Theme
-    document.body.style.filter = 'grayscale(1)';
+    // document.body.style.filter = 'grayscale(1)';
 })(jQuery);
